@@ -21,3 +21,23 @@ https://ru.wikipedia.org/wiki/%D0%9C%D0%BE%D1%80%D1%81%D0%BA%D0%BE%D0%B9_%D0%B1%
 - Spring
 - Maven
 - PostgreSQL
+
+Старт игры:
+
+![Запуск игры](docs/img/startGame.png)
+
+Создание нового игрока:
+
+![Создание игрока](docs/img/addPlayer.png)
+
+Расстоновка кораблей:
+
+![Расстоновка кораблей](docs/img/putShip.png)
+
+Некорректное размещение корабля:
+
+![Некорректное размещение корабля](docs/img/invalidShipPlacement.png)
+
+![Приувелечение заданного колличества кораблей](docs/img/enlargementShips.png)
+
+![Выход корабля за границы](docs/img/goBeyondBoundaries.png)
