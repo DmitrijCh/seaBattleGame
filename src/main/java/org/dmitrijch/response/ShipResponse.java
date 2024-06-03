@@ -1,4 +1,4 @@
-package org.dmitrijch.shipResponse;
+package org.dmitrijch.response;
 
 import org.dmitrijch.entity.Ship;
 
