@@ -1,5 +1,6 @@
 package org.dmitrijch.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,10 +13,12 @@ public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @JsonFormat(pattern = "yyyy-MM-dd' 'HH:mm:ss")
     private LocalDateTime startTime;
 
     public Game() {
-        this.startTime = LocalDateTime.now();
+        this.startTime = LocalDateTime.now().withNano(0);
     }
 
     public Long getId() {
