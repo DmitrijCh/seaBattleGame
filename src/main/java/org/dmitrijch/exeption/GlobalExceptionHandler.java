@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
 
         public ErrorResponse(int status, String message) {
             this.message = message;
+            this.status = status;
         }
 
         public int getStatus() {
