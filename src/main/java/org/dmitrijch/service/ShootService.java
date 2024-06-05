@@ -6,11 +6,14 @@ import org.dmitrijch.response.ShootResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ShootService {
     private final ShipRepository shipRepository;
+
+    // Карта для отслеживания выстрелов по игроку
+    private final Map<Long, Set<String>> playerShots = new HashMap<>();
 
     @Autowired
     public ShootService(ShipRepository shipRepository) {
@@ -18,28 +21,36 @@ public class ShootService {
     }
 
     public ShootResponse shoot(Long playerId, String x, int y) {
+        playerShots.putIfAbsent(playerId, new HashSet<>());
+
+        // Проверка, был ли уже сделан выстрел
+        String shotKey = x + y;
+        if (playerShots.get(playerId).contains(shotKey)) {
+            return new ShootResponse("Сюда уже стреляли");
+        }
+
+        // Запись выстрела
+        playerShots.get(playerId).add(shotKey);
+
         List<Ship> playerShips = shipRepository.findByPlayerId(playerId);
-        boolean allShipsSunk = true;
 
         // Проверка, находится ли какой-либо корабль игрока на указанной позиции
         for (Ship ship : playerShips) {
-            // Проверяем, находится ли точка (x, y) внутри корабля
             if (isPointInsideShip(ship, x, y)) {
                 ship.hit();
                 shipRepository.save(ship);
                 if (ship.isSunk()) {
-                    return new ShootResponse("Убит");
+                    // Проверка, остались ли еще корабли у игрока после потопления текущего корабля
+                    boolean hasRemainingShips = shipRepository.findByPlayerId(playerId).stream().anyMatch(s -> !s.isSunk());
+                    if (!hasRemainingShips) {
+                        return new ShootResponse("Победа");
+                    } else {
+                        return new ShootResponse("Убит");
+                    }
                 } else {
                     return new ShootResponse("Ранен");
                 }
-            } else if (!ship.isSunk()) {
-                // Если хотя бы один корабль не потоплен, устанавливается флаг allShipsSunk в false
-                allShipsSunk = false;
             }
-        }
-
-        if (allShipsSunk) {
-            return new ShootResponse("Победа");
         }
         return new ShootResponse("Мимо");
     }

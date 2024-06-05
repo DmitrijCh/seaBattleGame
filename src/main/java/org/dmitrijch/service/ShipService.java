@@ -10,6 +10,7 @@ import org.dmitrijch.request.ShipRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -48,7 +49,12 @@ public class ShipService {
     }
 
     private int positionXToNumber(String positionX) {
-        return positionX.charAt(0) - 'А' + 1;
+        String upperPositionX = positionX.toUpperCase();
+        // Проверка на допустимые буквы
+        if (!Arrays.asList("А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К").contains(upperPositionX)) {
+            throw new ShipPlacementException("Некорректное размещение корабля: Некорректная буквенная координата.");
+        }
+        return upperPositionX.charAt(0) - 'А' + 1;
     }
 
     private int getShipLength(int shipType) {
@@ -56,23 +62,14 @@ public class ShipService {
     }
 
     private String isPlacementValid(Player player, int startX, int startY, int length, String orientation) {
-        // Определение длины корабля в зависимости от его типа
-        int shipLength = 0;
-        switch (length) {
-            case 1:
-                shipLength = 1;
-                break;
-            case 2:
-                shipLength = 2;
-                break;
-            case 3:
-                shipLength = 3;
-                break;
-            case 4:
-                shipLength = 4;
-                break;
-            default:
-                return "Недопустимая длина корабля.";
+        // Проверка на отрицательные значения
+        if (startX < 1 || startY < 1) {
+            return "Координаты не могут быть отрицательными или равными нулю.";
+        }
+
+        // Проверка на допустимую длину корабля
+        if (length < 1 || length > 4) {
+            return "Недопустимая длина корабля.";
         }
 
         // Проверка на количество кораблей
@@ -92,63 +89,38 @@ public class ShipService {
         }
 
         // Проверка на превышение количества кораблей каждой длины
-        if (shipLength == 4 && shipCounts[3] >= 1) {
+        if (length == 4 && shipCounts[3] >= 1) {
             return "Нельзя разместить более одного четырехпалубного корабля.";
-        } else if (shipLength == 3 && shipCounts[2] >= 2) {
+        } else if (length == 3 && shipCounts[2] >= 2) {
             return "Нельзя разместить более двух трехпалубных кораблей.";
-        } else if (shipLength == 2 && shipCounts[1] >= 3) {
+        } else if (length == 2 && shipCounts[1] >= 3) {
             return "Нельзя разместить более трех двухпалубных кораблей.";
-        } else if (shipLength == 1 && shipCounts[0] >= 4) {
+        } else if (length == 1 && shipCounts[0] >= 4) {
             return "Нельзя разместить более четырех однопалубных кораблей.";
         }
 
         // Проверка на выход за границы игрового поля
-        if ("horizontal".equals(orientation)) {
-            if (startX + shipLength - 1 > 10) return "Корабль выходит за границы игрового поля.";
-        } else if ("vertical".equals(orientation)) {
-            if (startY + shipLength - 1 > 10) return "Корабль выходит за границы игрового поля.";
-        } else {
-            return "Некорректная ориентация корабля.";
+        int endX = startX + (orientation.equals("horizontal") ? length - 1 : 0);
+        int endY = startY + (orientation.equals("vertical") ? length - 1 : 0);
+
+        if (startX > 11 || startY > 10 || endX > 11 || endY > 10) {
+            return "Корабль выходит за границы игрового поля.";
         }
 
         // Проверка на пересечение с другими кораблями и их соседними клетками
-        List<Ship> otherShips = shipRepository.findByPlayer(player);
-        for (Ship ship : otherShips) {
+        for (Ship ship : existingShips) {
             int shipStartX = positionXToNumber(ship.getPositionX());
             int shipStartY = ship.getPositionY();
             int existingShipLength = getShipLength(ship.getShipType());
 
-            for (int i = -1; i <= existingShipLength; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    int x, y;
-                    if ("horizontal".equals(ship.getOrientation())) {
-                        x = shipStartX + i;
-                        y = shipStartY + j;
-                    } else if ("vertical".equals(ship.getOrientation())) {
-                        x = shipStartX + j;
-                        y = shipStartY + i;
-                    } else {
-                        return "Некорректная ориентация существующего корабля.";
-                    }
+            int shipEndX = shipStartX + (ship.getOrientation().equals("horizontal") ? existingShipLength - 1 : 0);
+            int shipEndY = shipStartY + (ship.getOrientation().equals("vertical") ? existingShipLength - 1 : 0);
 
-                    for (int k = 0; k < shipLength; k++) {
-                        int newX, newY;
-                        if ("horizontal".equals(orientation)) {
-                            newX = startX + k;
-                            newY = startY;
-                        } else {
-                            newX = startX;
-                            newY = startY + k;
-                        }
-
-                        if (newX == x && newY == y) {
-                            return "Корабль пересекается с другим кораблем или находится в соседней клетке.";
-                        }
-                    }
-                }
+            // Проверяем, находится ли новый корабль внутри области, где уже находится другой корабль
+            if (!(endX < shipStartX - 1 || startX > shipEndX + 1 || endY < shipStartY - 1 || startY > shipEndY + 1)) {
+                return "Корабль пересекается с другим кораблем или находится в соседней клетке.";
             }
         }
-
         return null;
     }
 }
