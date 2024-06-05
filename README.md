@@ -41,3 +41,13 @@ https://ru.wikipedia.org/wiki/%D0%9C%D0%BE%D1%80%D1%81%D0%BA%D0%BE%D0%B9_%D0%B1%
 ![Приувелечение заданного колличества кораблей](docs/img/enlargementShips.png)
 
 ![Выход корабля за границы](docs/img/goBeyondBoundaries.png)
+
+Нанесение ударов по кораблям:
+
+![Ранен](docs/img/injured.png)
+
+![Мимо](docs/img/missed.png)
+
+![Убит](docs/img/killed.png)
+
+![Победа](docs/img/victory.png)

@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ShipRepository extends JpaRepository<Ship, Long> {
     List<Ship> findByPlayer(Player player);
+
+    List<Ship> findByPlayerId(Long playerId);
 }

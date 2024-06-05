@@ -18,6 +18,8 @@ public class Ship {
     @Column(name = "position_y")
     private int positionY;
     private String orientation;
+    @Column(name = "hits")
+    private int hits;
 
     public Long getId() {
         return id;
@@ -65,5 +67,21 @@ public class Ship {
 
     public void setOrientation(String orientation) {
         this.orientation = orientation;
+    }
+
+    public int getHits() {
+        return hits;
+    }
+
+    public void setHits(int hits) {
+        this.hits = hits;
+    }
+
+    public void hit() {
+        hits++;
+    }
+
+    public boolean isSunk() {
+        return hits >= shipType;
     }
 }

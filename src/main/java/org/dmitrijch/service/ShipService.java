@@ -75,7 +75,7 @@ public class ShipService {
                 return "Недопустимая длина корабля.";
         }
 
-        // Проверка на количество кораблей и их каждой длины
+        // Проверка на количество кораблей
         List<Ship> existingShips = shipRepository.findByPlayer(player);
         int[] shipCounts = new int[4];
         int totalShips = existingShips.size();
