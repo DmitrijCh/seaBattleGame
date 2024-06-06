@@ -1,36 +1,35 @@
 package org.dmitrijch.service;
 
 import org.dmitrijch.entity.Ship;
+import org.dmitrijch.entity.Shot;
 import org.dmitrijch.repository.ShipRepository;
+import org.dmitrijch.repository.ShotRepository;
 import org.dmitrijch.response.ShootResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
 
 @Service
 public class ShootService {
     private final ShipRepository shipRepository;
-
-    // Карта для отслеживания выстрелов по игроку
-    private final Map<Long, Set<String>> playerShots = new HashMap<>();
+    private final ShotRepository shotRepository;
 
     @Autowired
-    public ShootService(ShipRepository shipRepository) {
+    public ShootService(ShipRepository shipRepository, ShotRepository shotRepository) {
         this.shipRepository = shipRepository;
+        this.shotRepository = shotRepository;
     }
 
     public ShootResponse shoot(Long playerId, String x, int y) {
-        playerShots.putIfAbsent(playerId, new HashSet<>());
-
         // Проверка, был ли уже сделан выстрел
-        String shotKey = x + y;
-        if (playerShots.get(playerId).contains(shotKey)) {
+        if (shotRepository.existsByPlayerIdAndXAndY(playerId, x, y)) {
             return new ShootResponse("Сюда уже стреляли");
         }
 
         // Запись выстрела
-        playerShots.get(playerId).add(shotKey);
+        Shot shot = new Shot(playerId, x, y);
+        shotRepository.save(shot);
 
         List<Ship> playerShips = shipRepository.findByPlayerId(playerId);
 
